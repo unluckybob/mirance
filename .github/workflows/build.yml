@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+    
+    - name: Restore NuGet packages
+      run: |
+        nuget restore src/Mirance.sln
+    
+    - name: Build solution
+      run: |
+        msbuild src/Mirance.sln /p:Configuration=Release /p:Platform="Any CPU" /t:Rebuild /v:minimal
+    
+    - name: Build Mirance.App
+      run: |
+        msbuild src/Mirance.App/Mirance.App.csproj /p:Configuration=Release /v:minimal
+    
+    - name: Build Mirance.Protocol
+      run: |
+        msbuild src/Mirance.Protocol/Mirance.Protocol.csproj /p:Configuration=Release /v:minimal
+    
+    - name: Build Mirance.Video
+      run: |
+        msbuild src/Mirance.Video/Mirance.Video.csproj /p:Configuration=Release /v:minimal
+    
+    - name: Build Mirance.Render
+      run: |
+        msbuild src/Mirance.Render/Mirance.Render.csproj /p:Configuration=Release /v:minimal
+    
+    - name: List output
+      if: success()
+      run: |
+        Get-ChildItem -Path src -Recurse -Include "*.exe","*.dll" | Select-Object FullName, Length | Format-Table -AutoSize
