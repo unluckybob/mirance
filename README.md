@@ -73,9 +73,9 @@ MIRANCE connects to your iPhone via USB and captures the screen using iOS's buil
 
 ## 🛠️ Tech Stack
 
-- **.NET 8** - Runtime
+- **.NET Framework 4.6.1** - Runtime (Windows Desktop)
 - **WPF** - UI Framework
-- **SharpDX/Veldrid** - GPU Rendering
+- **SharpDX** - GPU Rendering (DirectX 11)
 - **libusbmuxd** - USB Device Communication
 - **NAudio** - Audio (future)
 
