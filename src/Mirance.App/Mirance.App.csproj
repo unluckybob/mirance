@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mirance.Protocol\Mirance.Protocol.csproj" />
+    <ProjectReference Include="..\Mirance.Transit\Mirance.Transit.csproj" />
     <ProjectReference Include="..\Mirance.Video\Mirance.Video.csproj" />
     <ProjectReference Include="..\Mirance.Render\Mirance.Render.csproj" />
   </ItemGroup>
