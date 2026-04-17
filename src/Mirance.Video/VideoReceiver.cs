@@ -3,6 +3,9 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Net;
+using System.Text;
+using System.Linq;
 
 namespace Mirance.Video
 {
@@ -15,21 +18,18 @@ namespace Mirance.Video
     {
         // Header (20 bytes)
         public byte Type;           // Byte 0: Frame type (0x01)
-        public byte[] Flags;       // Bytes 1-3: Flags
+        public byte[] Flags;        // Bytes 1-3: Flags
         public uint Sequence;       // Bytes 4-7: Sequence (little-endian)
         public ulong Timestamp;     // Bytes 8-15: Timestamp (little-endian)
-        public uint Size;           // Bytes 16-19: Size (little-endian)
+        public uint Size;          // Bytes 16-19: Size (little-endian)
         
         // Data (41068 bytes)
-        public byte[] Data;         // Bytes 20+
+        public byte[] Data;        // Bytes 20+
         
         public const int FrameSize = 41088;
         public const int HeaderSize = 20;
         public const int DataSize = 41068;
         
-        /// <summary>
-        /// Parse a video frame from raw bytes
-        /// </summary>
         public static VideoFrame Parse(byte[] raw)
         {
             if (raw.Length < FrameSize)
@@ -46,9 +46,6 @@ namespace Mirance.Video
             };
         }
         
-        /// <summary>
-        /// Serialize frame to bytes
-        /// </summary>
         public byte[] ToBytes()
         {
             var buffer = new byte[FrameSize];
@@ -90,6 +87,142 @@ namespace Mirance.Video
     }
 
     /// <summary>
+    /// Internal TCP server for video/control
+    /// Mirrors uses localhost ports 4720, 4793, 49350, 49678
+    /// </summary>
+    public class InternalTcpServer : IDisposable
+    {
+        // Server ports (from PCAP analysis)
+        public const int PortHttpApi = 4720;
+        public const int PortControl = 4793;
+        public const int PortVideo = 49350;
+        public const int PortAuxControl = 49678;
+        
+        private TcpListener _httpListener;
+        private TcpListener _controlListener;
+        private TcpListener _videoListener;
+        private TcpListener _auxListener;
+        
+        private bool _running;
+        private Task _httpTask;
+        private Task _controlTask;
+        
+        public event EventHandler<FrameReceivedEventArgs> FrameReceived;
+        public event EventHandler<string> ControlReceived;
+        
+        public bool IsRunning => _running;
+        
+        /// <summary>
+        /// Start all internal TCP servers
+        /// </summary>
+        public async Task StartAsync()
+        {
+            _running = true;
+            
+            // Start HTTP API server (port 4720)
+            _httpListener = new TcpListener(IPAddress.Loopback, PortHttpApi);
+            _httpListener.Start();
+            _httpTask = Task.Run(async () => await HttpServerLoopAsync());
+            
+            // Start Control server (port 4793)
+            _controlListener = new TcpListener(IPAddress.Loopback, PortControl);
+            _controlListener.Start();
+            _controlTask = Task.Run(async () => await ControlServerLoopAsync());
+            
+            Console.WriteLine("[Internal] Servers started on ports 4720, 4793");
+        }
+        
+        /// <summary>
+        /// Stop all servers
+        /// </summary>
+        public void Stop()
+        {
+            _running = false;
+            _httpListener?.Stop();
+            _controlListener?.Stop();
+        }
+        
+        private async Task HttpServerLoopAsync()
+        {
+            while (_running)
+            {
+                try
+                {
+                    var client = await _httpListener.AcceptTcpClientAsync();
+                    _ = Task.Run(async () => await HandleHttpClientAsync(client));
+                }
+                catch { }
+            }
+        }
+        
+        private async Task HandleHttpClientAsync(TcpClient client)
+        {
+            try
+            {
+                var stream = client.GetStream();
+                var buffer = new byte[1024];
+                var read = await stream.ReadAsync(buffer, 0, buffer.Length);
+                
+                if (read > 0)
+                {
+                    var request = Encoding.ASCII.GetString(buffer, 0, read);
+                    
+                    // Handle /ping
+                    if (request.Contains("GET /ping"))
+                    {
+                        var response = "HTTP/1.1 200 OK\r\n" +
+                                     "Content-Type: application/json\r\n" +
+                                     "Content-Length: 29\r\n\r\n" +
+                                     "{\"path\": \"/ping\", \"data\": true}";
+                        var responseBytes = Encoding.ASCII.GetBytes(response);
+                        await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
+                    }
+                }
+                
+                client.Close();
+            }
+            catch { }
+        }
+        
+        private async Task ControlServerLoopAsync()
+        {
+            while (_running)
+            {
+                try
+                {
+                    var client = await _controlListener.AcceptTcpClientAsync();
+                    _ = Task.Run(async () => await HandleControlClientAsync(client));
+                }
+                catch { }
+            }
+        }
+        
+        private async Task HandleControlClientAsync(TcpClient client)
+        {
+            try
+            {
+                var stream = client.GetStream();
+                var buffer = new byte[4096];
+                var read = await stream.ReadAsync(buffer, 0, buffer.Length);
+                
+                if (read > 0)
+                {
+                    var data = Encoding.ASCII.GetString(buffer, 0, read);
+                    ControlReceived?.Invoke(this, data);
+                }
+                
+                client.Close();
+            }
+            catch { }
+        }
+        
+        public void Dispose()
+        {
+            Stop();
+        }
+    }
+
+    /// <summary>
     /// Video stream receiver - listens on port 49350
     /// </summary>
     public class VideoReceiver : IDisposable
@@ -109,9 +242,11 @@ namespace Mirance.Video
         /// </summary>
         public async Task StartAsync(int port = VideoPort)
         {
-            _listener = new TcpListener(System.Net.IPAddress.Loopback, port);
+            _listener = new TcpListener(IPAddress.Loopback, port);
             _listener.Start();
             _running = true;
+            
+            Console.WriteLine($"[Video] Listening on port {port}");
             
             _receiveTask = Task.Run(async () => await ReceiveLoopAsync());
         }
@@ -148,19 +283,20 @@ namespace Mirance.Video
                         }
                         else if (bytesRead > 0)
                         {
-                            // Partial frame or error
-                            Console.WriteLine($"Received {bytesRead} bytes (expected {VideoFrame.FrameSize})");
+                            Console.WriteLine($"[Video] Received {bytesRead} bytes (expected {VideoFrame.FrameSize})");
                         }
                         else
                         {
                             break;
                         }
                     }
+                    
+                    _client.Close();
                 }
                 catch (Exception ex)
                 {
                     if (_running)
-                        Console.WriteLine($"Video receiver error: {ex.Message}");
+                        Console.WriteLine($"[Video] Error: {ex.Message}");
                 }
             }
         }
