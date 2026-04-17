@@ -14,33 +14,17 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1
+      uses: microsoft/setup-msbuild@v2
     
-    - name: Restore NuGet packages
+    - name: List project files
       run: |
-        nuget restore src/Mirance.sln
+        dir src
     
-    - name: Build solution
+    - name: Build with dotnet CLI
       run: |
-        msbuild src/Mirance.sln /p:Configuration=Release /p:Platform="Any CPU" /t:Rebuild /v:minimal
-    
-    - name: Build Mirance.App
-      run: |
-        msbuild src/Mirance.App/Mirance.App.csproj /p:Configuration=Release /v:minimal
-    
-    - name: Build Mirance.Protocol
-      run: |
-        msbuild src/Mirance.Protocol/Mirance.Protocol.csproj /p:Configuration=Release /v:minimal
-    
-    - name: Build Mirance.Video
-      run: |
-        msbuild src/Mirance.Video/Mirance.Video.csproj /p:Configuration=Release /v:minimal
-    
-    - name: Build Mirance.Render
-      run: |
-        msbuild src/Mirance.Render/Mirance.Render.csproj /p:Configuration=Release /v:minimal
+        dotnet build src/Mirance.sln --configuration Release --no-restore
     
     - name: List output
       if: success()
       run: |
-        Get-ChildItem -Path src -Recurse -Include "*.exe","*.dll" | Select-Object FullName, Length | Format-Table -AutoSize
+        dir src/*/bin/Release/*.dll 2>$null; dir src/*/bin/Release/*.exe 2>$null
