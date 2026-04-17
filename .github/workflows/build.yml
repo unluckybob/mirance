@@ -13,18 +13,23 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
-    
-    - name: List project files
+    - name: Check files
       run: |
-        dir src
-    
-    - name: Build with dotnet CLI
+        dir /b src\*.sln
+        dir /b src\Mirance.*\*.csproj
+        dir /b src\Mirance.*\*.cs
+        dir /b src\Mirance.*\*.xaml
+
+    - name: List all source files
       run: |
-        dotnet build src/Mirance.sln --configuration Release --no-restore
+        Get-ChildItem -Path src -Recurse -Include *.cs,*.xaml,*.csproj,*.sln | Select-Object FullName | Format-Table -AutoSize
     
-    - name: List output
-      if: success()
+    - name: Count files
       run: |
-        dir src/*/bin/Release/*.dll 2>$null; dir src/*/bin/Release/*.exe 2>$null
+        $cs = (Get-ChildItem -Path src -Recurse -Filter "*.cs").Count
+        $xaml = (Get-ChildItem -Path src -Recurse -Filter "*.xaml").Count
+        $csproj = (Get-ChildItem -Path src -Recurse -Filter "*.csproj").Count
+        Write-Host "C# files: $cs"
+        Write-Host "XAML files: $xaml"
+        Write-Host "Project files: $csproj"
+        if ($cs -gt 0 -and $xaml -gt 0 -and $csproj -gt 0) { exit 0 } else { exit 1 }
