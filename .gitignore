@@ -2,3 +2,4 @@ AnyMiro/
 *.pcapng
 *.zip
 *.md
+src/Mirance.Runtime/
