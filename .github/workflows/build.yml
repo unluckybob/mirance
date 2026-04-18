@@ -1,10 +1,9 @@
-name: Build
+name: Build Mirance.exe
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,24 +11,20 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Check files
-      run: |
-        dir /b src\*.sln
-        dir /b src\Mirance.*\*.csproj
-        dir /b src\Mirance.*\*.cs
-        dir /b src\Mirance.*\*.xaml
-
-    - name: List all source files
-      run: |
-        Get-ChildItem -Path src -Recurse -Include *.cs,*.xaml,*.csproj,*.sln | Select-Object FullName | Format-Table -AutoSize
-    
-    - name: Count files
-      run: |
-        $cs = (Get-ChildItem -Path src -Recurse -Filter "*.cs").Count
-        $xaml = (Get-ChildItem -Path src -Recurse -Filter "*.xaml").Count
-        $csproj = (Get-ChildItem -Path src -Recurse -Filter "*.csproj").Count
-        Write-Host "C# files: $cs"
-        Write-Host "XAML files: $xaml"
-        Write-Host "Project files: $csproj"
-        if ($cs -gt 0 -and $xaml -gt 0 -and $csproj -gt 0) { exit 0 } else { exit 1 }
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore
+      run: dotnet restore src/Mirance.sln
+      
+    - name: Build
+      run: dotnet build src/Mirance.sln -c Release
+      
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Mirance-Release
+        path: bin/
