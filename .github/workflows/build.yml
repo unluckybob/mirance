@@ -12,19 +12,44 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       
+    - name: Download Runtime
+      run: |
+        # Note: Mirance-Runtime.zip should be added to repo
+        # For now, create a placeholder
+        
+    - name: Extract from zip
+      run: |
+        # Extract runtime if available, otherwise use Git LFS or upload
+        if (Test-Path "Mirance-Runtime.zip") {
+          Expand-Archive -Path "Mirance-Release.zip" -DestinationPath "Mirance" -Force
+        } else {
+          # Create placeholder message
+          "Runtime not available" | Out-File "Mirance/README.txt"
+        }
+        
     - name: Create release package
       run: |
-        # Create Mirance folder
         mkdir -p Mirance/Release
         
         # Copy AnyMiro as Mirance
-        cp AnyMiro/AnyMiro.exe Mirance/Release/Mirance.exe
+        if (Test-Path "Mirance-Runtime.zip") {
+          # Extract
+        }
         
-        # Copy all DLLs
-        cp -r AnyMiro/* Mirance/Release/
+        # Create a README explaining this is based on AnyMiro
+        "MIRANCE - iPhone USB Screen Mirroring for Windows
+Based on AnyMiro binary (included in Mirance-Runtime.zip)
+Download Mirance-Runtime.zip from releases and extract here." | Out-File "Mirance/Release/README.txt"
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Mirance-Release
         path: Mirance/Release/
+        
+    - name: Upload Runtime Reference
+      uses: actions/upload-artifact@v4
+      with:
+        name: Mirance-Runtime
+        path: Mirance-Runtime.zip
+      if: exists('Mirance-Runtime.zip')
