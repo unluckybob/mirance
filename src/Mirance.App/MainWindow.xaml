@@ -63,9 +63,9 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                     
-                    <Button x:Name="RefreshButton" Grid.Row="2" Content="🔄 Refresh Devices" 
+                    <Button x:Name="RefreshButton" Grid.Row="2" Content="▶ Start Mirroring" 
                             Background="#E94560" Foreground="White" Padding="15,10" 
-                            Margin="0,15,0,0" Click="RefreshButton_Click"/>
+                            Margin="0,15,0,0" Click="StartMirroringButton_Click"/>
                 </Grid>
             </Border>
             
