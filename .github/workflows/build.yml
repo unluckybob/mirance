@@ -26,9 +26,17 @@ jobs:
     - name: Create release folder
       run: mkdir Mirance
         
-    - name: Copy built files
+    - name: Copy built app files
       run: |
         Copy-Item -Path "src/Mirance.App\bin\Release\net8.0-windows\*" -Destination "Mirance\" -Recurse -Force
+        
+    - name: Copy AnyMiro DLLs
+      run: |
+        Copy-Item -Path "AnyMiro\*" -Destination "Mirance\" -Recurse -Force
+        
+    - name: Copy usbmuxd folder
+      run: |
+        Copy-Item -Path "AnyMiro\usbmuxd" -Destination "Mirance\" -Recurse -Force
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
