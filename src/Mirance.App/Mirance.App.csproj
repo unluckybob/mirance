@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <LangVersion>latest</LangVersion>
     <AssemblyName>Mirance</AssemblyName>
-    <ApplicationIcon>..\Mirance.ico</ApplicationIcon>
+    <ApplicationIcon>Mirance.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,6 +48,12 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Mirance.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NLog" Version="5.2.8" />
