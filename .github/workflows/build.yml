@@ -23,20 +23,35 @@ jobs:
     - name: Build
       run: dotnet build src/Mirance.sln -c Release --no-restore
         
-    - name: Create release folder
-      run: mkdir Mirance
+    - name: Create Portable folder
+      run: mkdir Mirance-Portable
         
-    - name: Copy built app files
+    - name: Create Installer folder
+      run: mkdir Mirance-Installer
+        
+    - name: Copy Portable files
       run: |
-        Copy-Item -Path "src\Mirance.App\bin\Release\net8.0-windows\*" -Destination "Mirance\" -Recurse -Force
+        Copy-Item -Path "src\Mirance.App\bin\Release\net8.0-windows\*" -Destination "Mirance-Portable\" -Recurse -Force
+        Copy-Item -Path "AnyMiro.Filtered\*" -Destination "Mirance-Portable\" -Recurse -Force
+        Copy-Item -Path "debug.bat" -Destination "Mirance-Portable\"
         
-    - name: Copy AnyMiro Filtered DLLs
+    - name: Copy Installer files
       run: |
-        Copy-Item -Path "AnyMiro.Filtered\*" -Destination "Mirance\" -Recurse -Force
+        Copy-Item -Path "src\Mirance.App\bin\Release\net8.0-windows\*" -Destination "Mirance-Installer\" -Recurse -Force
+        Copy-Item -Path "AnyMiro.Filtered\*" -Destination "Mirance-Installer\" -Recurse -Force
+        Copy-Item -Path "Mirance-Setup\Setup.bat" -Destination "Mirance-Installer\"
+        Copy-Item -Path "debug.bat" -Destination "Mirance-Installer\"
         
-    - name: Upload Artifact
+    - name: Upload Portable Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Mirance-bin
-        path: Mirance/
+        name: Mirance-Portable
+        path: Mirance-Portable/
+        retention-days: 30
+        
+    - name: Upload Installer Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Mirance-Installer
+        path: Mirance-Installer/
         retention-days: 30
