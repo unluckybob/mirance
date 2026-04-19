@@ -12,44 +12,42 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       
-    - name: Download Runtime
-      run: |
-        # Note: Mirance-Runtime.zip should be added to repo
-        # For now, create a placeholder
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
         
-    - name: Extract from zip
+    - name: Download AnyMiro Runtime
       run: |
-        # Extract runtime if available, otherwise use Git LFS or upload
-        if (Test-Path "Mirance-Runtime.zip") {
-          Expand-Archive -Path "Mirance-Release.zip" -DestinationPath "Mirance" -Force
-        } else {
-          # Create placeholder message
-          "Runtime not available" | Out-File "Mirance/README.txt"
+        # Download AnyMiro runtime from release
+        curl -L -o Mirance-Runtime.zip "https://github.com/unluckybob/mirance/releases/download/v1.0/Mirance-Runtime.zip"
+        Expand-Archive -Path "Mirance-Runtime.zip" -DestinationPath "AnyMiro" -Force
+        
+    - name: Restore packages
+      run: dotnet restore src/Mirance.sln
+        
+    - name: Build
+      run: dotnet build src/Mirance.sln -c Release --no-restore
+        
+    - name: Copy AnyMiro files to output
+      run: |
+        Copy-Item -Path "AnyMiro\*" -Destination "src/Mirance.App/bin/Release/net8.0-windows/" -Recurse -Force
+        
+    - name: Create release folder
+      run: |
+        mkdir Mirance
+        Copy-Item -Path "src/Mirance.App/bin/Release/net8.0-windows\*" -Destination "Mirance/" -Recurse -Force
+        
+    - name: Rename to Mirance.exe
+      run: |
+        # Rename AnyMiro.exe to Mirance.exe in release folder
+        $exe = Get-ChildItem "Mirance" -Filter "AnyMiro.exe" | Select-Object -First 1
+        if ($exe) {
+            Rename-Item -Path $exe.FullName -NewName "Mirance.exe"
         }
-        
-    - name: Create release package
-      run: |
-        mkdir -p Mirance/Release
-        
-        # Copy AnyMiro as Mirance
-        if (Test-Path "Mirance-Runtime.zip") {
-          # Extract
-        }
-        
-        # Create a README explaining this is based on AnyMiro
-        "MIRANCE - iPhone USB Screen Mirroring for Windows
-Based on AnyMiro binary (included in Mirance-Runtime.zip)
-Download Mirance-Runtime.zip from releases and extract here." | Out-File "Mirance/Release/README.txt"
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Mirance-Release
-        path: Mirance/Release/
-        
-    - name: Upload Runtime Reference
-      uses: actions/upload-artifact@v4
-      with:
-        name: Mirance-Runtime
-        path: Mirance-Runtime.zip
-      if: exists('Mirance-Runtime.zip')
+        path: Mirance/
