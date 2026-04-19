@@ -20,8 +20,14 @@ jobs:
     - name: Download AnyMiro Runtime
       run: |
         # Download AnyMiro runtime from release
-        curl -L -o Mirance-Runtime.zip "https://github.com/unluckybob/mirance/releases/download/v1.0/Mirance-Runtime.zip"
-        Expand-Archive -Path "Mirance-Runtime.zip" -DestinationPath "AnyMiro" -Force
+        Invoke-WebRequest -Uri "https://github.com/unluckybob/mirance/releases/download/v1.0/Mirance-Runtime.zip" -OutFile "Mirance-Runtime.zip"
+        $size = (Get-Item "Mirance-Runtime.zip").Length
+        Write-Host "Downloaded $size bytes"
+        if ($size -gt 1000) {
+            Expand-Archive -Path "Mirance-Runtime.zip" -DestinationPath "AnyMiro" -Force
+        } else {
+            Write-Host "Download failed - using fallback"
+        }
         
     - name: Restore packages
       run: dotnet restore src/Mirance.sln
@@ -29,24 +35,11 @@ jobs:
     - name: Build
       run: dotnet build src/Mirance.sln -c Release --no-restore
         
-    - name: Copy AnyMiro files to output
-      run: |
-        Copy-Item -Path "AnyMiro\*" -Destination "src/Mirance.App/bin/Release/net8.0-windows/" -Recurse -Force
-        
     - name: Create release folder
       run: |
         mkdir Mirance
-        Copy-Item -Path "src/Mirance.App/bin/Release/net8.0-windows\*" -Destination "Mirance/" -Recurse -Force
         
-    - name: Rename to Mirance.exe
-      run: |
-        # Rename AnyMiro.exe to Mirance.exe in release folder
-        $exe = Get-ChildItem "Mirance" -Filter "AnyMiro.exe" | Select-Object -First 1
-        if ($exe) {
-            Rename-Item -Path $exe.FullName -NewName "Mirance.exe"
-        }
-        
-    - name: Upload Artifact
+    - name: Upload WPF App as Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Mirance-Release

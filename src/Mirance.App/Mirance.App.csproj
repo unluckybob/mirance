@@ -6,54 +6,11 @@
     <UseWPF>true</UseWPF>
     <LangVersion>latest</LangVersion>
     <AssemblyName>Mirance</AssemblyName>
-    <ApplicationIcon></ApplicationIcon>
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>false</SelfContained>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="Core.DeviceConfig">
-      <HintPath>..\..\AnyMiro\Core.DeviceConfig.dll</HintPath>
-    </Reference>
-    <Reference Include="Core.MD.Render">
-      <HintPath>..\..\AnyMiro\Core.MD.Render.dll</HintPath>
-    </Reference>
-    <Reference Include="Core.MirroringConnection">
-      <HintPath>..\..\AnyMiro\Core.MirroringConnection.dll</HintPath>
-    </Reference>
-    <Reference Include="Renderer.Core">
-      <HintPath>..\..\AnyMiro\Renderer.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Service.AudioCapture">
-      <HintPath>..\..\AnyMiro\Service.AudioCapture.dll</HintPath>
-    </Reference>
-    <Reference Include="Service.Encoding">
-      <HintPath>..\..\AnyMiro\Service.Encoding.dll</HintPath>
-    </Reference>
-    <Reference Include="Service.Mirroring">
-      <HintPath>..\..\AnyMiro\Service.Mirroring.dll</HintPath>
-    </Reference>
-    <Reference Include="Service.VideoCapture">
-      <HintPath>..\..\AnyMiro\Service.VideoCapture.dll</HintPath>
-    </Reference>
-    <Reference Include="Mirance.Protocol">
-      <HintPath>..\Mirance.Protocol\Mirance.Protocol.dll</HintPath>
-    </Reference>
-    <Reference Include="Mirance.Render">
-      <HintPath>..\Mirance.Render\Mirance.Render.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NLog" Version="5.2.8" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\AnyMiro\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>%(Filename)%(Extension)</Link>
-    </None>
   </ItemGroup>
 
 </Project>
