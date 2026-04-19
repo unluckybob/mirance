@@ -35,13 +35,4 @@ jobs:
       with:
         name: Mirance-bin
         path: Mirance/
-        
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: v1.0.0
-        name: MIRANCE v1.0.0
-        draft: true
-        files: Mirance/Mirance.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        retention-days: 30
