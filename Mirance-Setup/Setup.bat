@@ -29,10 +29,10 @@ if errorlevel 1 (
 )
 
 echo Creating Start Menu shortcut...
-powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%ProgramData%\Microsoft\Windows\Start Menu\Programs\MIRANCE.lnk'); $s.TargetPath = '%INSTALL_DIR%\Mirance.exe'; $s.WorkingDirectory = '%INSTALL_DIR%'; $s.Description = 'iPhone USB Screen Mirroring'; $s.Save()"
+powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%ProgramData%\Microsoft\Windows\Start Menu\Programs\MIRANCE.lnk'); $s.TargetPath = '%INSTALL_DIR%\Mirance.exe'; $s.WorkingDirectory = '%INSTALL_DIR%'; $s.Description = 'iPhone USB Screen Mirroring'; $s.IconLocation = '%INSTALL_DIR%\Mirance.ico'; $s.Save()"
 
 echo Creating Desktop shortcut...
-powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%USERPROFILE%\Desktop\MIRANCE.lnk'); $s.TargetPath = '%INSTALL_DIR%\Mirance.exe'; $s.WorkingDirectory = '%INSTALL_DIR%'; $s.Description = 'iPhone USB Screen Mirroring'; $s.Save()"
+powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%USERPROFILE%\Desktop\MIRANCE.lnk'); $s.TargetPath = '%INSTALL_DIR%\Mirance.exe'; $s.WorkingDirectory = '%INSTALL_DIR%'; $s.Description = 'iPhone USB Screen Mirroring'; $s.IconLocation = '%INSTALL_DIR%\Mirance.ico'; $s.Save()"
 
 echo.
 echo ============================================

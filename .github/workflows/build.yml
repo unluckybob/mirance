@@ -34,6 +34,7 @@ jobs:
         Copy-Item -Path "src\Mirance.App\bin\Release\net8.0-windows\*" -Destination "Mirance-Portable\" -Recurse -Force
         Copy-Item -Path "AnyMiro.Filtered\*" -Destination "Mirance-Portable\" -Recurse -Force
         Copy-Item -Path "debug.bat" -Destination "Mirance-Portable\"
+        Copy-Item -Path "Mirance.ico" -Destination "Mirance-Portable\"
         
     - name: Copy Installer files
       run: |
@@ -41,6 +42,7 @@ jobs:
         Copy-Item -Path "AnyMiro.Filtered\*" -Destination "Mirance-Installer\" -Recurse -Force
         Copy-Item -Path "Mirance-Setup\Setup.bat" -Destination "Mirance-Installer\"
         Copy-Item -Path "debug.bat" -Destination "Mirance-Installer\"
+        Copy-Item -Path "Mirance.ico" -Destination "Mirance-Installer\"
         
     - name: Upload Portable Artifact
       uses: actions/upload-artifact@v4

@@ -6,6 +6,7 @@
     <UseWPF>true</UseWPF>
     <LangVersion>latest</LangVersion>
     <AssemblyName>Mirance</AssemblyName>
+    <ApplicationIcon>..\Mirance.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
