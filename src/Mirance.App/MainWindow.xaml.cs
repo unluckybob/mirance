@@ -254,7 +254,7 @@ namespace Mirance.App
             if (DeviceList.SelectedItem is ListBoxItem item && item.Tag != null)
             {
                 var device = item.Tag;
-                string deviceId = (device is string) ? device : GetDeviceId(device);
+                string deviceId = (device is string) ? (string)device : GetDeviceId(device);
                 ConnectToDevice(deviceId);
             }
         }
